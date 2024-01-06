@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TaskService } from './task.service';
 import { TaskController } from './task.controller';
 import { GardenModule } from 'src/garden/garden.module';
@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    GardenModule,
+    forwardRef(() => GardenModule),
     ClientsModule.registerAsync([
       {
         name: 'GARDEN',
@@ -23,5 +23,6 @@ import { ConfigService } from '@nestjs/config';
   ],
   controllers: [TaskController],
   providers: [TaskService],
+  exports: [TaskService],
 })
 export class TaskModule {}

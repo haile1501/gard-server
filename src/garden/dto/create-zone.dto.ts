@@ -8,7 +8,6 @@ import {
 
 export class CreateZoneDto {
   @IsString()
-  @IsOptional()
   plant: string;
 
   @IsDate()

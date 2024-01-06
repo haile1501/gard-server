@@ -1,4 +1,10 @@
-import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  OnModuleInit,
+  forwardRef,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
@@ -9,6 +15,7 @@ import { CreateIrrigationScheduleDto } from './dto/create-irrigation-schedule.dt
 @Injectable()
 export class TaskService implements OnModuleInit {
   constructor(
+    @Inject(forwardRef(() => GardenService))
     private readonly gardenService: GardenService,
     private schedulerRegistry: SchedulerRegistry,
     @Inject('GARDEN') private readonly client: ClientProxy,
@@ -124,4 +131,8 @@ export class TaskService implements OnModuleInit {
   switchLight(deviceMacAddress: string, turn: string) {}
 
   switchWater(deviceMacAddress: string, turn: string) {}
+
+  switchLightSchedule(deviceMacAddress: string, turn: string) {}
+
+  switchWaterSchedule(deviceMacAddress: string, turn: string) {}
 }

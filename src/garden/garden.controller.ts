@@ -85,6 +85,12 @@ export class GardenController {
     this.gardenService.switchWaterSchedule(zoneId, turn);
   }
 
+  @Get('my-garden')
+  getMyGarden(@Req() request: Request) {
+    const userId = request['user']._id;
+    return this.gardenService.getMyGarden(userId);
+  }
+
   @MessagePattern('device-register')
   handleDeviceRegister(@Payload() deviceMacAddress: string) {
     return this.gardenService.registerDevice(deviceMacAddress);

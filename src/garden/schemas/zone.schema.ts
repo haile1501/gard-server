@@ -7,7 +7,7 @@ export type ZoneDocument = HydratedDocument<Zone>;
 
 @Schema({ timestamps: true })
 export class Zone {
-  @Prop({ require: true })
+  @Prop()
   plant: string;
 
   @Prop({

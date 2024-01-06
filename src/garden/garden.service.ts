@@ -9,6 +9,7 @@ import { Device } from './schemas/device.schema';
 import { CreateGardenDto } from './dto/create-garden.dto';
 import { Garden } from './schemas/garden.schema';
 import { UserService } from 'src/user/user.service';
+import { TaskService } from 'src/task/task.service';
 
 @Injectable()
 export class GardenService {
@@ -17,6 +18,7 @@ export class GardenService {
     @InjectModel(Device.name) private deviceModel: Model<Device>,
     @InjectModel(Garden.name) private gardenModel: Model<Garden>,
     private userService: UserService,
+    private readonly taskService: TaskService,
   ) {}
 
   async getAllZones(gardenId: string) {
@@ -55,7 +57,7 @@ export class GardenService {
   async createZone(createZoneDto: CreateZoneDto) {
     const garden = await this.gardenModel.findById(createZoneDto.gardenId);
     const device = await this.deviceModel.findById(createZoneDto.deviceId);
-    return this.zoneModel.create({ createZoneDto, garden, device });
+    return this.zoneModel.create({ ...createZoneDto, garden, device });
   }
 
   async createGarden(createGardenDto: CreateGardenDto, userId: string) {
@@ -87,26 +89,35 @@ export class GardenService {
   }
 
   async switchLight(zoneId: string, turn: string) {
-    await this.zoneModel.findByIdAndUpdate(zoneId, {
+    const zone = await this.zoneModel.findByIdAndUpdate(zoneId, {
       isLightOn: turn === 'on',
     });
+    this.taskService.switchLight(zone.device.macAddress, turn);
   }
 
-  switchWater(zoneId: string, turn: string) {
-    this.zoneModel.findByIdAndUpdate(zoneId, {
+  async switchWater(zoneId: string, turn: string) {
+    const zone = await this.zoneModel.findByIdAndUpdate(zoneId, {
       isWatering: turn === 'on',
     });
+    this.taskService.switchWater(zone.device.macAddress, turn);
   }
 
-  switchLightSchedule(zoneId: string, turn: string) {
-    this.zoneModel.findByIdAndUpdate(zoneId, {
+  async switchLightSchedule(zoneId: string, turn: string) {
+    const zone = await this.zoneModel.findByIdAndUpdate(zoneId, {
       isAutoLight: turn === 'on',
     });
+    this.taskService.switchLightSchedule(zone.device.macAddress, turn);
   }
 
-  switchWaterSchedule(zoneId: string, turn: string) {
-    this.zoneModel.findByIdAndUpdate(zoneId, {
+  async switchWaterSchedule(zoneId: string, turn: string) {
+    const zone = await this.zoneModel.findByIdAndUpdate(zoneId, {
       isAutoWater: turn === 'on',
     });
+    this.taskService.switchWaterSchedule(zone.device.macAddress, turn);
+  }
+
+  async getMyGarden(userId: string) {
+    const user = await this.userService.findById(userId);
+    return this.gardenModel.findOne({ user });
   }
 }

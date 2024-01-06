@@ -7,12 +7,12 @@ import { ConfigService } from '@nestjs/config';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-      transformOptions: { enableImplicitConversion: true },
-    }),
-  );
+  // app.useGlobalPipes(
+  //   new ValidationPipe({
+  //     transform: true,
+  //     transformOptions: { enableImplicitConversion: true },
+  //   }),
+  // );
   const configService = app.get(ConfigService);
   app.connectMicroservice({
     transport: Transport.MQTT,

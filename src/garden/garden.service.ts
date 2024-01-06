@@ -57,7 +57,13 @@ export class GardenService {
   async createZone(createZoneDto: CreateZoneDto) {
     const garden = await this.gardenModel.findById(createZoneDto.gardenId);
     const device = await this.deviceModel.findById(createZoneDto.deviceId);
-    return this.zoneModel.create({ ...createZoneDto, garden, device });
+    const zone = await this.zoneModel.create({
+      ...createZoneDto,
+      garden,
+      device,
+    });
+    device.zone = zone;
+    await device.save();
   }
 
   async createGarden(createGardenDto: CreateGardenDto, userId: string) {

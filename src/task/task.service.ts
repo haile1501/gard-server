@@ -13,7 +13,7 @@ import { CreateLightScheduleDto } from './dto/create-light-schedule.dto';
 import { CreateIrrigationScheduleDto } from './dto/create-irrigation-schedule.dto';
 
 @Injectable()
-export class TaskService implements OnModuleInit {
+export class TaskService {
   constructor(
     @Inject(forwardRef(() => GardenService))
     private readonly gardenService: GardenService,
@@ -25,55 +25,6 @@ export class TaskService implements OnModuleInit {
 
   private getCronTime(date: Date) {
     return `0 ${date.getMinutes()} ${date.getHours()} * * *`;
-  }
-
-  private async restartSavedCronTasks(): Promise<void> {
-    const zones = await this.gardenService.getAllZoneWithActiveSchedule();
-    zones.forEach((zone) => {
-      if (zone.isAutoLight) {
-        const lightJob = this.schedulerRegistry.getCronJob(`${zone.id}-light`);
-        if (!lightJob) {
-          const newLightJob = CronJob.from({
-            cronTime: this.getCronTime(zone.lightStartTime),
-            onTick: () => {
-              this.client.emit('turn-on-light', {});
-              setTimeout(() => {
-                this.client.emit('turn-off-light', {});
-              }, zone.lightTime * 1000);
-            },
-            timeZone: 'system',
-          });
-          this.schedulerRegistry.addCronJob(`${zone.id}-light`, newLightJob);
-          newLightJob.start();
-        }
-      }
-
-      if (zone.isAutoWater) {
-        const irrigationJob = this.schedulerRegistry.getCronJob(
-          `${zone.id}-irrigation`,
-        );
-        if (!irrigationJob) {
-          const newIrrigationJob = CronJob.from({
-            cronTime: this.getCronTime(zone.irrigationStartTime),
-            onTick: () => {
-              this.client.emit('start-watering', {
-                waterAmount: zone.waterAmount,
-              });
-            },
-            timeZone: 'system',
-          });
-          this.schedulerRegistry.addCronJob(
-            `${zone.id}-irrigation`,
-            newIrrigationJob,
-          );
-          newIrrigationJob.start();
-        }
-      }
-    });
-  }
-
-  async onModuleInit(): Promise<void> {
-    await this.restartSavedCronTasks();
   }
 
   async createLightSchedule(createLightScheduleDto: CreateLightScheduleDto) {
@@ -128,7 +79,10 @@ export class TaskService implements OnModuleInit {
     newIrrigationJob.start();
   }
 
-  switchLight(deviceMacAddress: string, turn: string) {}
+  switchLight(deviceMacAddress: string, turn: string) {
+    console.log(deviceMacAddress);
+    this.client.emit(`${deviceMacAddress}-light`, turn);
+  }
 
   switchWater(deviceMacAddress: string, turn: string) {}
 

@@ -98,7 +98,8 @@ export class GardenService {
     const zone = await this.zoneModel.findByIdAndUpdate(zoneId, {
       isLightOn: turn === 'on',
     });
-    this.taskService.switchLight(zone.device.macAddress, turn);
+    const device = await this.deviceModel.findById(zone.device);
+    this.taskService.switchLight(device.macAddress, turn);
   }
 
   async switchWater(zoneId: string, turn: string) {

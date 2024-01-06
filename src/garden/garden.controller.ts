@@ -18,10 +18,10 @@ import { CreateGardenDto } from './dto/create-garden.dto';
 import { HttpAuthGuard } from 'src/auth/guard/auth.guard';
 
 @Controller('garden')
-@UseGuards(HttpAuthGuard)
 export class GardenController {
   constructor(private readonly gardenService: GardenService) {}
 
+  @UseGuards(HttpAuthGuard)
   @Post()
   createGarden(
     @Body() createGardenDto: CreateGardenDto,
@@ -31,16 +31,19 @@ export class GardenController {
     return this.gardenService.createGarden(createGardenDto, userId);
   }
 
+  @UseGuards(HttpAuthGuard)
   @Get(':gardenId/zone')
   getAllZones(@Param('gardenId') gardenId: string) {
     return this.gardenService.getAllZones(gardenId);
   }
 
+  @UseGuards(HttpAuthGuard)
   @Post('zone')
   createZone(@Body() createZoneDto: CreateZoneDto) {
     return this.gardenService.createZone(createZoneDto);
   }
 
+  @UseGuards(HttpAuthGuard)
   @Post('zone/:zoneId')
   updateZone(
     @Body() updateZoneDto: UpdateZoneDto,
@@ -49,26 +52,31 @@ export class GardenController {
     return this.gardenService.updateZone(zoneId, updateZoneDto);
   }
 
+  @UseGuards(HttpAuthGuard)
   @Delete('zone/:zoneId')
   deleteZone(@Param() zoneId: string) {
     return this.gardenService.deleteZone(zoneId);
   }
 
+  @UseGuards(HttpAuthGuard)
   @Get(':gardenId/device')
   getNotUsedDevices() {
     return this.gardenService.getNotUsedDevices();
   }
 
+  @UseGuards(HttpAuthGuard)
   @Post(':gardenId/zone/:zoneId/light')
   switchLight(@Query('turn') turn: string, @Param('zoneId') zoneId: string) {
     this.gardenService.switchLight(zoneId, turn);
   }
 
+  @UseGuards(HttpAuthGuard)
   @Post(':gardenId/zone/:zoneId/water')
   switchWater(@Query('turn') turn: string, @Param('zoneId') zoneId: string) {
     this.gardenService.switchWater(zoneId, turn);
   }
 
+  @UseGuards(HttpAuthGuard)
   @Post(':gardenId/zone/:zoneId/light-schedule')
   switchLightSchedule(
     @Query('turn') turn: string,
@@ -77,6 +85,7 @@ export class GardenController {
     this.gardenService.switchLightSchedule(zoneId, turn);
   }
 
+  @UseGuards(HttpAuthGuard)
   @Post(':gardenId/zone/:zoneId/water-schedule')
   switchhWaterSchedule(
     @Query('turn') turn: string,
@@ -85,6 +94,7 @@ export class GardenController {
     this.gardenService.switchWaterSchedule(zoneId, turn);
   }
 
+  @UseGuards(HttpAuthGuard)
   @Get('my-garden')
   getMyGarden(@Req() request: Request) {
     const userId = request['user']._id;

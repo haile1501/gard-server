@@ -112,12 +112,21 @@ export class GardenController {
   }
 
   @UseGuards(HttpAuthGuard)
-  @Post('zone/:zoneId/threshold-noti')
-  switchThresholdNoti(
+  @Post('zone/:zoneId/temp-threshold-noti')
+  switchTempThresholdNoti(
     @Param('zoneId') zoneId: string,
     @Query('turn') turn: string,
   ) {
-    return this.gardenService.switchThresholdNoti(zoneId, turn);
+    return this.gardenService.switchTempThresholdNoti(zoneId, turn);
+  }
+
+  @UseGuards(HttpAuthGuard)
+  @Post('zone/:zoneId/humid-threshold-noti')
+  switchHumidThresholdNoti(
+    @Param('zoneId') zoneId: string,
+    @Query('turn') turn: string,
+  ) {
+    return this.gardenService.switchHumidThresholdNoti(zoneId, turn);
   }
 
   @MessagePattern('device-register')

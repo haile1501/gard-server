@@ -165,9 +165,19 @@ export class GardenService {
     return zone;
   }
 
-  async switchThresholdNoti(zoneId: string, turn: string) {
+  async switchTempThresholdNoti(zoneId: string, turn: string) {
     const zone = await this.zoneModel.findByIdAndUpdate(zoneId, {
-      $set: { thresholdNoti: turn === 'on' },
+      $set: { tempThresholdNoti: turn === 'on' },
+    });
+    if (!zone) {
+      throw new NotFoundException(`Zone ${zoneId} not found`);
+    }
+    return zone;
+  }
+
+  async switchHumidThresholdNoti(zoneId: string, turn: string) {
+    const zone = await this.zoneModel.findByIdAndUpdate(zoneId, {
+      $set: { humidThresholdNoti: turn === 'on' },
     });
     if (!zone) {
       throw new NotFoundException(`Zone ${zoneId} not found`);

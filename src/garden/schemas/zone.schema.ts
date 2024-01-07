@@ -61,7 +61,10 @@ export class Zone {
   isAutoWater: boolean;
 
   @Prop({ default: false })
-  thresholdNoti: boolean;
+  tempThresholdNoti: boolean;
+
+  @Prop({ default: false })
+  humidThresholdNoti: boolean;
 }
 
 export const ZoneSchema = SchemaFactory.createForClass(Zone);

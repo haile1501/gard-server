@@ -1,13 +1,5 @@
-import {
-  Inject,
-  Injectable,
-  Logger,
-  OnModuleInit,
-  forwardRef,
-} from '@nestjs/common';
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { SchedulerRegistry } from '@nestjs/schedule';
-import { CronJob } from 'cron';
 import { GardenService } from 'src/garden/garden.service';
 import { CreateLightScheduleDto } from './dto/create-light-schedule.dto';
 import { CreateIrrigationScheduleDto } from './dto/create-irrigation-schedule.dto';
@@ -17,40 +9,61 @@ export class TaskService {
   constructor(
     @Inject(forwardRef(() => GardenService))
     private readonly gardenService: GardenService,
-    private schedulerRegistry: SchedulerRegistry,
     @Inject('GARDEN') private readonly client: ClientProxy,
   ) {}
 
   private readonly logger = new Logger(TaskService.name);
 
-  private getCronTime(date: Date) {
-    return `0 ${date.getMinutes()} ${date.getHours()} * * *`;
-  }
-
   async createLightSchedule(createLightScheduleDto: CreateLightScheduleDto) {
-    const zone = await this.gardenService.updateZone(
+    await this.gardenService.updateZone(
       createLightScheduleDto.zoneId,
       createLightScheduleDto,
     );
+    const device = await this.gardenService.getDeviceOfZone(
+      createLightScheduleDto.zoneId,
+    );
+    const { lightStartTime, lightTime } = createLightScheduleDto;
+    const date = new Date(lightStartTime);
+    this.client.emit(`${device.macAddress}-set_light_schedule`, {
+      hour: date.getHours(),
+      min: date.getMinutes(),
+      sec: date.getSeconds(),
+      lightTime,
+    });
   }
 
   async createIrrigationSchedule(
     createIrrigationScheduleDto: CreateIrrigationScheduleDto,
   ) {
-    const zone = await this.gardenService.updateZone(
+    await this.gardenService.updateZone(
       createIrrigationScheduleDto.zoneId,
       createIrrigationScheduleDto,
     );
+    const device = await this.gardenService.getDeviceOfZone(
+      createIrrigationScheduleDto.zoneId,
+    );
+    const { irrigationStartTime, waterAmount } = createIrrigationScheduleDto;
+    this.client.emit(`${device.macAddress}-set_light_schedule`, {
+      hour: irrigationStartTime.getHours(),
+      min: irrigationStartTime.getMinutes(),
+      sec: irrigationStartTime.getSeconds(),
+      waterAmount,
+    });
   }
 
   switchLight(deviceMacAddress: string, turn: string) {
-    console.log(deviceMacAddress);
-    this.client.emit(`${deviceMacAddress}-light`, turn);
+    this.client.emit(`light`, turn);
   }
 
-  switchWater(deviceMacAddress: string, turn: string) {}
+  switchWater(deviceMacAddress: string, turn: string) {
+    this.client.emit(`${deviceMacAddress}-water`, turn);
+  }
 
-  switchLightSchedule(deviceMacAddress: string, turn: string) {}
+  switchLightSchedule(deviceMacAddress: string, turn: string) {
+    this.client.emit(`${deviceMacAddress}-light_schedule`, turn);
+  }
 
-  switchWaterSchedule(deviceMacAddress: string, turn: string) {}
+  switchWaterSchedule(deviceMacAddress: string, turn: string) {
+    this.client.emit(`${deviceMacAddress}-water_schedule`, turn);
+  }
 }

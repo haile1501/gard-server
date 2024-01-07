@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Zone } from './schemas/zone.schema';
 import { Model } from 'mongoose';
@@ -10,6 +14,7 @@ import { CreateGardenDto } from './dto/create-garden.dto';
 import { Garden } from './schemas/garden.schema';
 import { UserService } from 'src/user/user.service';
 import { TaskService } from 'src/task/task.service';
+import { SetThresholdDto } from './dto/set-threshold.dto';
 
 @Injectable()
 export class GardenService {
@@ -56,14 +61,24 @@ export class GardenService {
 
   async createZone(createZoneDto: CreateZoneDto) {
     const garden = await this.gardenModel.findById(createZoneDto.gardenId);
+    if (!garden) {
+      throw new NotFoundException(`Garden ${createZoneDto.gardenId} not found`);
+    }
     const device = await this.deviceModel.findById(createZoneDto.deviceId);
+    if (!device) {
+      throw new NotFoundException(`Device ${createZoneDto.deviceId} not found`);
+    }
+    if (!device.isAvailable) {
+      throw new BadRequestException(`Device ${device._id} is already used`);
+    }
     const zone = await this.zoneModel.create({
       ...createZoneDto,
       garden,
       device,
     });
-    device.zone = zone;
+    device.isAvailable = false;
     await device.save();
+    return zone;
   }
 
   async createGarden(createGardenDto: CreateGardenDto, userId: string) {
@@ -86,12 +101,19 @@ export class GardenService {
     return existingDevice;
   }
 
-  deleteZone(zoneId: string) {
-    this.zoneModel.findByIdAndDelete(zoneId);
+  async deleteZone(zoneId: string) {
+    const zone = await this.zoneModel.findById(zoneId);
+    if (!zone) {
+      throw new NotFoundException(`Zone ${zoneId} not found`);
+    }
+    const device = await this.deviceModel.findById(zone.device);
+    device.isAvailable = true;
+    await Promise.all([device.save(), zone.deleteOne()]);
+    return zone;
   }
 
   getNotUsedDevices() {
-    return this.deviceModel.find({ zone: null });
+    return this.deviceModel.find({ isAvailable: true });
   }
 
   async switchLight(zoneId: string, turn: string) {
@@ -126,5 +148,30 @@ export class GardenService {
   async getMyGarden(userId: string) {
     const user = await this.userService.findById(userId);
     return this.gardenModel.findOne({ user });
+  }
+
+  async getDeviceOfZone(zoneId: string) {
+    const zone = await this.zoneModel.findById(zoneId);
+    return this.deviceModel.findOne({ zone });
+  }
+
+  async setThreshold(zoneId: string, setThresholdDto: SetThresholdDto) {
+    const zone = await this.zoneModel.findByIdAndUpdate(zoneId, {
+      $set: { thresholdNoti: true, ...setThresholdDto },
+    });
+    if (!zone) {
+      throw new NotFoundException(`Zone ${zoneId} not found`);
+    }
+    return zone;
+  }
+
+  async switchThresholdNoti(zoneId: string, turn: string) {
+    const zone = await this.zoneModel.findByIdAndUpdate(zoneId, {
+      $set: { thresholdNoti: turn === 'on' },
+    });
+    if (!zone) {
+      throw new NotFoundException(`Zone ${zoneId} not found`);
+    }
+    return zone;
   }
 }

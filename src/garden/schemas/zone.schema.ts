@@ -24,20 +24,28 @@ export class Zone {
   })
   device: Device;
 
+  @Prop({ default: null })
   irrigationStartTime: Date;
 
+  @Prop({ default: 0 })
   waterAmount: number;
 
+  @Prop({ default: null })
   lightStartTime: Date;
 
+  @Prop({ default: 0 })
   lightTime: number;
 
+  @Prop({ default: 0 })
   minHumidity: number;
 
+  @Prop({ default: 0 })
   maxHumidity: number;
 
+  @Prop({ default: 0 })
   minTemperature: number;
 
+  @Prop({ default: 0 })
   maxTemperature: number;
 
   @Prop({ default: false })

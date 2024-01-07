@@ -16,6 +16,7 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UpdateZoneDto } from './dto/update-zone.dto';
 import { CreateGardenDto } from './dto/create-garden.dto';
 import { HttpAuthGuard } from 'src/auth/guard/auth.guard';
+import { SetThresholdDto } from './dto/set-threshold.dto';
 
 @Controller('garden')
 export class GardenController {
@@ -54,7 +55,7 @@ export class GardenController {
 
   @UseGuards(HttpAuthGuard)
   @Delete('zone/:zoneId')
-  deleteZone(@Param() zoneId: string) {
+  deleteZone(@Param('zoneId') zoneId: string) {
     return this.gardenService.deleteZone(zoneId);
   }
 
@@ -99,6 +100,24 @@ export class GardenController {
   getMyGarden(@Req() request: Request) {
     const userId = request['user']._id;
     return this.gardenService.getMyGarden(userId);
+  }
+
+  @UseGuards(HttpAuthGuard)
+  @Post('zone/:zoneId/threshold')
+  setThreshold(
+    @Param('zoneId') zoneId: string,
+    setThresholdDto: SetThresholdDto,
+  ) {
+    return this.gardenService.setThreshold(zoneId, setThresholdDto);
+  }
+
+  @UseGuards(HttpAuthGuard)
+  @Post('zone/:zoneId/threshold-noti')
+  switchThresholdNoti(
+    @Param('zoneId') zoneId: string,
+    @Query('turn') turn: string,
+  ) {
+    return this.gardenService.switchThresholdNoti(zoneId, turn);
   }
 
   @MessagePattern('device-register')

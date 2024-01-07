@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Zone } from './zone.schema';
+import { HydratedDocument } from 'mongoose';
 
 export type DeviceDocument = HydratedDocument<Device>;
 
@@ -9,8 +8,8 @@ export class Device {
   @Prop({ unique: true })
   macAddress: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Zone' })
-  zone: Zone;
+  @Prop({ default: true })
+  isAvailable: boolean;
 }
 
 export const DeviceSchema = SchemaFactory.createForClass(Device);

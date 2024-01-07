@@ -15,6 +15,8 @@ import { ConfigService } from '@nestjs/config';
           transport: Transport.MQTT,
           options: {
             url: configService.get('MQTT_URL'),
+            username: configService.get('MQTT_USER'),
+            password: configService.get('MQTT_PASSWORD'),
           },
         }),
         inject: [ConfigService],

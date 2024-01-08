@@ -46,12 +46,13 @@ export class TaskService {
       createIrrigationScheduleDto.zoneId,
     );
     const { irrigationStartTime, waterAmount } = createIrrigationScheduleDto;
+    const date = new Date(irrigationStartTime);
     this.client.emit(
       `${device.macAddress}-set_light_schedule`,
       JSON.stringify({
-        hour: irrigationStartTime.getHours(),
-        min: irrigationStartTime.getMinutes(),
-        sec: irrigationStartTime.getSeconds(),
+        hour: date.getHours(),
+        min: date.getMinutes(),
+        sec: date.getSeconds(),
         waterAmount,
       }),
     );

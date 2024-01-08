@@ -16,6 +16,8 @@ export class TaskController {
   createIrrigationSchedule(
     @Body() createIrrigationScheduleDto: CreateIrrigationScheduleDto,
   ) {
-    return this.createIrrigationSchedule(createIrrigationScheduleDto);
+    return this.taskService.createIrrigationSchedule(
+      createIrrigationScheduleDto,
+    );
   }
 }

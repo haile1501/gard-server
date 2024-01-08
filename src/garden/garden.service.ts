@@ -163,7 +163,8 @@ export class GardenService {
 
   async getMyGarden(userId: string) {
     const user = await this.userService.findById(userId);
-    return this.gardenModel.findOne({ user });
+    const garden = await this.gardenModel.findOne({ user });
+    return garden ? garden : 'no garden';
   }
 
   async getDeviceOfZone(zoneId: string) {

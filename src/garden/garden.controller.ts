@@ -8,6 +8,7 @@ import {
   UseGuards,
   Req,
   Query,
+  Sse,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { GardenService } from './garden.service';
@@ -18,10 +19,15 @@ import { CreateGardenDto } from './dto/create-garden.dto';
 import { HttpAuthGuard } from 'src/auth/guard/auth.guard';
 import { SetHumidThresholdDto } from './dto/set-humid-threshold.dto';
 import { SetTempThresholdDto } from './dto/set-temp-threshold.dto';
+import { Observable, fromEvent, map } from 'rxjs';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Controller('garden')
 export class GardenController {
-  constructor(private readonly gardenService: GardenService) {}
+  constructor(
+    private readonly gardenService: GardenService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
 
   @UseGuards(HttpAuthGuard)
   @Post()
@@ -142,5 +148,19 @@ export class GardenController {
   @MessagePattern('device-register')
   handleDeviceRegister(@Payload() deviceMacAddress: string) {
     return this.gardenService.registerDevice(deviceMacAddress);
+  }
+
+  @MessagePattern('moisture')
+  handleReceiveMoisture(@Payload() data: string) {
+    this.eventEmitter.emit('moisture', data);
+  }
+
+  @Sse('sse')
+  sse(): Observable<MessageEvent> {
+    return fromEvent(this.eventEmitter, 'moisture').pipe(
+      map((data) => {
+        return { data } as MessageEvent;
+      }),
+    );
   }
 }

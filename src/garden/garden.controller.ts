@@ -152,6 +152,7 @@ export class GardenController {
 
   @MessagePattern('moisture')
   handleReceiveMoisture(@Payload() data: string) {
+    console.log(data);
     this.eventEmitter.emit('moisture', data);
   }
 

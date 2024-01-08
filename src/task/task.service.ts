@@ -24,12 +24,15 @@ export class TaskService {
     );
     const { lightStartTime, lightTime } = createLightScheduleDto;
     const date = new Date(lightStartTime);
-    this.client.emit(`${device.macAddress}-set_light_schedule`, {
-      hour: date.getHours(),
-      min: date.getMinutes(),
-      sec: date.getSeconds(),
-      lightTime,
-    });
+    this.client.emit(
+      `${device.macAddress}-set_light_schedule`,
+      JSON.stringify({
+        hour: date.getHours(),
+        min: date.getMinutes(),
+        sec: date.getSeconds(),
+        lightTime,
+      }),
+    );
   }
 
   async createIrrigationSchedule(
@@ -43,16 +46,19 @@ export class TaskService {
       createIrrigationScheduleDto.zoneId,
     );
     const { irrigationStartTime, waterAmount } = createIrrigationScheduleDto;
-    this.client.emit(`${device.macAddress}-set_light_schedule`, {
-      hour: irrigationStartTime.getHours(),
-      min: irrigationStartTime.getMinutes(),
-      sec: irrigationStartTime.getSeconds(),
-      waterAmount,
-    });
+    this.client.emit(
+      `${device.macAddress}-set_light_schedule`,
+      JSON.stringify({
+        hour: irrigationStartTime.getHours(),
+        min: irrigationStartTime.getMinutes(),
+        sec: irrigationStartTime.getSeconds(),
+        waterAmount,
+      }),
+    );
   }
 
   switchLight(deviceMacAddress: string, turn: string) {
-    this.client.emit(`light`, turn);
+    this.client.emit(`${deviceMacAddress}-light`, turn);
   }
 
   switchWater(deviceMacAddress: string, turn: string) {

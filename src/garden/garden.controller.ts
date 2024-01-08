@@ -16,7 +16,8 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { UpdateZoneDto } from './dto/update-zone.dto';
 import { CreateGardenDto } from './dto/create-garden.dto';
 import { HttpAuthGuard } from 'src/auth/guard/auth.guard';
-import { SetThresholdDto } from './dto/set-threshold.dto';
+import { SetHumidThresholdDto } from './dto/set-humid-threshold.dto';
+import { SetTempThresholdDto } from './dto/set-temp-threshold.dto';
 
 @Controller('garden')
 export class GardenController {
@@ -103,12 +104,21 @@ export class GardenController {
   }
 
   @UseGuards(HttpAuthGuard)
-  @Post('zone/:zoneId/threshold')
-  setThreshold(
+  @Post('zone/:zoneId/temp-threshold')
+  setTempThreshold(
     @Param('zoneId') zoneId: string,
-    setThresholdDto: SetThresholdDto,
+    @Body() setTempThresholdDto: SetTempThresholdDto,
   ) {
-    return this.gardenService.setThreshold(zoneId, setThresholdDto);
+    return this.gardenService.setTempThreshold(zoneId, setTempThresholdDto);
+  }
+
+  @UseGuards(HttpAuthGuard)
+  @Post('zone/:zoneId/humid-threshold')
+  setHumidThreshold(
+    @Param('zoneId') zoneId: string,
+    @Body() setHumidThresholdDto: SetHumidThresholdDto,
+  ) {
+    return this.gardenService.setHumidThreshold(zoneId, setHumidThresholdDto);
   }
 
   @UseGuards(HttpAuthGuard)

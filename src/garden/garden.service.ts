@@ -14,7 +14,8 @@ import { CreateGardenDto } from './dto/create-garden.dto';
 import { Garden } from './schemas/garden.schema';
 import { UserService } from 'src/user/user.service';
 import { TaskService } from 'src/task/task.service';
-import { SetThresholdDto } from './dto/set-threshold.dto';
+import { SetTempThresholdDto } from './dto/set-temp-threshold.dto';
+import { SetHumidThresholdDto } from './dto/set-humid-threshold.dto';
 
 @Injectable()
 export class GardenService {
@@ -120,6 +121,9 @@ export class GardenService {
     const zone = await this.zoneModel.findByIdAndUpdate(zoneId, {
       isLightOn: turn === 'on',
     });
+    if (!zone) {
+      throw new NotFoundException(`Zone ${zoneId} not found`);
+    }
     const device = await this.deviceModel.findById(zone.device);
     this.taskService.switchLight(device.macAddress, turn);
   }
@@ -128,21 +132,33 @@ export class GardenService {
     const zone = await this.zoneModel.findByIdAndUpdate(zoneId, {
       isWatering: turn === 'on',
     });
-    this.taskService.switchWater(zone.device.macAddress, turn);
+    if (!zone) {
+      throw new NotFoundException(`Zone ${zoneId} not found`);
+    }
+    const device = await this.deviceModel.findById(zone.device);
+    this.taskService.switchWater(device.macAddress, turn);
   }
 
   async switchLightSchedule(zoneId: string, turn: string) {
     const zone = await this.zoneModel.findByIdAndUpdate(zoneId, {
       isAutoLight: turn === 'on',
     });
-    this.taskService.switchLightSchedule(zone.device.macAddress, turn);
+    if (!zone) {
+      throw new NotFoundException(`Zone ${zoneId} not found`);
+    }
+    const device = await this.deviceModel.findById(zone.device);
+    this.taskService.switchLightSchedule(device.macAddress, turn);
   }
 
   async switchWaterSchedule(zoneId: string, turn: string) {
     const zone = await this.zoneModel.findByIdAndUpdate(zoneId, {
       isAutoWater: turn === 'on',
     });
-    this.taskService.switchWaterSchedule(zone.device.macAddress, turn);
+    if (!zone) {
+      throw new NotFoundException(`Zone ${zoneId} not found`);
+    }
+    const device = await this.deviceModel.findById(zone.device);
+    this.taskService.switchWaterSchedule(device.macAddress, turn);
   }
 
   async getMyGarden(userId: string) {
@@ -152,12 +168,28 @@ export class GardenService {
 
   async getDeviceOfZone(zoneId: string) {
     const zone = await this.zoneModel.findById(zoneId);
-    return this.deviceModel.findOne({ zone });
+    return this.deviceModel.findById(zone.device);
   }
 
-  async setThreshold(zoneId: string, setThresholdDto: SetThresholdDto) {
+  async setTempThreshold(
+    zoneId: string,
+    setTempThresholdDto: SetTempThresholdDto,
+  ) {
     const zone = await this.zoneModel.findByIdAndUpdate(zoneId, {
-      $set: { thresholdNoti: true, ...setThresholdDto },
+      $set: { tempThresholdNoti: true, ...setTempThresholdDto },
+    });
+    if (!zone) {
+      throw new NotFoundException(`Zone ${zoneId} not found`);
+    }
+    return zone;
+  }
+
+  async setHumidThreshold(
+    zoneId: string,
+    setHumidThresholdDto: SetHumidThresholdDto,
+  ) {
+    const zone = await this.zoneModel.findByIdAndUpdate(zoneId, {
+      $set: { humidThresholdNoti: true, ...setHumidThresholdDto },
     });
     if (!zone) {
       throw new NotFoundException(`Zone ${zoneId} not found`);

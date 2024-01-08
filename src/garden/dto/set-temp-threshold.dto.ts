@@ -1,15 +1,9 @@
 import { IsNumber } from 'class-validator';
 
-export class SetThresholdDto {
+export class SetTempThresholdDto {
   @IsNumber()
   minTemperature: number;
 
   @IsNumber()
   maxTemperature: number;
-
-  @IsNumber()
-  minHumidity: number;
-
-  @IsNumber()
-  maxHumidity: number;
 }

@@ -21,6 +21,7 @@ import { SetHumidThresholdDto } from './dto/set-humid-threshold.dto';
 import { SetTempThresholdDto } from './dto/set-temp-threshold.dto';
 import { Observable, fromEvent, map } from 'rxjs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SensorDataDto } from './dto/sensor-data.dto';
 
 @Controller('garden')
 export class GardenController {
@@ -150,15 +151,17 @@ export class GardenController {
     return this.gardenService.registerDevice(deviceMacAddress);
   }
 
-  @MessagePattern('moisture')
-  handleReceiveMoisture(@Payload() data: string) {
-    console.log(data);
-    this.eventEmitter.emit('moisture', data);
+  @MessagePattern('sensor-data')
+  async handleReceiveMoisture(@Payload() data: SensorDataDto) {
+    const zone = await this.gardenService.getZoneByDeviceMacAdress(
+      data.macAddress,
+    );
+    this.eventEmitter.emit('sensor-data', { id: zone._id, ...data });
   }
 
   @Sse('sse')
   sse(): Observable<MessageEvent> {
-    return fromEvent(this.eventEmitter, 'moisture').pipe(
+    return fromEvent(this.eventEmitter, 'sensor-data').pipe(
       map((data) => {
         return { data } as MessageEvent;
       }),

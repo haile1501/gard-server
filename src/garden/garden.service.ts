@@ -172,6 +172,12 @@ export class GardenService {
     return this.deviceModel.findById(zone.device);
   }
 
+  async getZoneByDeviceMacAdress(macAddress: string) {
+    const device = await this.deviceModel.findOne({ macAddress });
+    const zone = await this.zoneModel.findOne({ device });
+    return zone;
+  }
+
   async setTempThreshold(
     zoneId: string,
     setTempThresholdDto: SetTempThresholdDto,

@@ -22,6 +22,7 @@ import { SetTempThresholdDto } from './dto/set-temp-threshold.dto';
 import { Observable, fromEvent, map } from 'rxjs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SensorDataDto } from './dto/sensor-data.dto';
+import { AutoSwitchDto } from './dto/auto-switch.dto';
 
 @Controller('garden')
 export class GardenController {
@@ -159,9 +160,48 @@ export class GardenController {
     this.eventEmitter.emit('sensor-data', { id: zone._id, ...data });
   }
 
-  @Sse('sse')
-  sse(): Observable<MessageEvent> {
+  @MessagePattern('auto-switch-light')
+  async handleSwitchLight(@Payload() autoSwitchDto: AutoSwitchDto) {
+    const zone = await this.gardenService.getZoneByDeviceMacAdress(
+      autoSwitchDto.macAddress,
+    );
+    await this.gardenService.updateZone(zone._id.toString(), {
+      isLightOn: autoSwitchDto.turn === 'on',
+    });
+    this.eventEmitter.emit('auto-switch', {
+      id: zone._id,
+      ...autoSwitchDto,
+      type: 'light',
+    });
+  }
+
+  @MessagePattern('auto-switch-water')
+  async handleSwitchWater(@Payload() autoSwitchDto: AutoSwitchDto) {
+    const zone = await this.gardenService.getZoneByDeviceMacAdress(
+      autoSwitchDto.macAddress,
+    );
+    await this.gardenService.updateZone(zone._id.toString(), {
+      isWatering: autoSwitchDto.turn === 'on',
+    });
+    this.eventEmitter.emit('auto-switch', {
+      id: zone._id,
+      ...autoSwitchDto,
+      type: 'water',
+    });
+  }
+
+  @Sse('sensor-data')
+  sensorData(): Observable<MessageEvent> {
     return fromEvent(this.eventEmitter, 'sensor-data').pipe(
+      map((data) => {
+        return { data } as MessageEvent;
+      }),
+    );
+  }
+
+  @Sse('auto-switch')
+  autoSwitch(): Observable<MessageEvent> {
+    return fromEvent(this.eventEmitter, 'auto-switch').pipe(
       map((data) => {
         return { data } as MessageEvent;
       }),

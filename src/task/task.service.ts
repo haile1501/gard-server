@@ -67,10 +67,10 @@ export class TaskService {
   }
 
   switchLightSchedule(deviceMacAddress: string, turn: string) {
-    this.client.emit(`${deviceMacAddress}-light_schedule`, turn);
+    this.client.emit(`${deviceMacAddress}-switch_light_schedule`, turn);
   }
 
   switchWaterSchedule(deviceMacAddress: string, turn: string) {
-    this.client.emit(`${deviceMacAddress}-water_schedule`, turn);
+    this.client.emit(`${deviceMacAddress}-switch_water_schedule`, turn);
   }
 }
